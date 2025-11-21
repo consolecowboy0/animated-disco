@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Castle Courier</title>
+  <style>
+    :root {
+      --bg: #0f1828;
+      --panel: #111c2e;
+      --panel-strong: #0b1420;
+      --accent: #88d6f5;
+      --accent-2: #eab676;
+      --ink: #d7e5ff;
+      --muted: #93a4c3;
+      --success: #9adca8;
+      --warning: #f3c27b;
+      --danger: #f28b82;
+      --shadow: 0 8px 30px rgba(0,0,0,0.35);
+      font-size: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(136,214,245,0.1), transparent 30%),
+                  radial-gradient(circle at 80% 10%, rgba(234,182,118,0.1), transparent 25%),
+                  #0b1220;
+      color: var(--ink);
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 28px 16px 48px;
+    }
+    .game-shell {
+      width: min(1080px, 100%);
+      background: linear-gradient(145deg, rgba(17,28,46,0.92), rgba(9,17,28,0.92));
+      border: 1px solid rgba(136,214,245,0.2);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 20px 20px 16px;
+      backdrop-filter: blur(6px);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+    .title {
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .subtitle { color: var(--muted); font-size: 0.95rem; }
+    .top-panel {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+    .scene-box {
+      background: var(--panel);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(136,214,245,0.2);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+    .scene-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35));
+      background: linear-gradient(135deg, rgba(16,25,41,0.9), rgba(9,15,28,0.95));
+      border-radius: 10px;
+    }
+    .info-box {
+      background: var(--panel);
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid rgba(136,214,245,0.2);
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 10px;
+    }
+    .status {
+      background: rgba(255,255,255,0.02);
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid rgba(136,214,245,0.15);
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; color: var(--muted); font-size: 0.9rem; }
+    .legend span { color: var(--ink); font-weight: 600; }
+    .log {
+      background: var(--panel-strong);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(136,214,245,0.15);
+      min-height: 240px;
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+    .entry { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(136,214,245,0.1); background: rgba(255,255,255,0.02); color: var(--ink); }
+    .entry.you { border-color: rgba(234,182,118,0.35); color: var(--accent-2); }
+    .entry.game { border-color: rgba(136,214,245,0.25); }
+    .entry strong { color: var(--accent); }
+    form {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(136,214,245,0.35);
+      background: #0b1626;
+      color: var(--ink);
+      font-size: 1rem;
+    }
+    button {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(136,214,245,0.4);
+      background: linear-gradient(135deg, #2b6ea6, #1f4f82);
+      color: #e9f5ff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(34,105,168,0.35);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 8px 16px rgba(34,105,168,0.45); }
+    button:active { transform: translateY(0); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(136,214,245,0.25);
+      background: rgba(255,255,255,0.02);
+      color: var(--ink);
+      font-size: 0.85rem;
+    }
+    .pill svg { width: 14px; height: 14px; }
+    @media (max-width: 900px) {
+      .top-panel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <header>
+      <div>
+        <div class="title">Castle Courier</div>
+        <div class="subtitle">Explore the moonlit keep with text commands & illustrated scenes.</div>
+      </div>
+      <div class="pill" aria-label="Help commands">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 16h.01"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/></svg>
+        Type <strong>help</strong>
+      </div>
+    </header>
+    <div class="top-panel">
+      <div id="scene" class="scene-box" aria-live="polite"></div>
+      <div class="info-box">
+        <div id="status" class="status"></div>
+        <ul class="legend">
+          <li><span>Movement:</span> go north/south/east/west</li>
+          <li><span>Inspect:</span> look, examine &lt;item&gt;</li>
+          <li><span>Collect:</span> take &lt;item&gt;, inventory</li>
+          <li><span>Use items:</span> use key, use crest, use sunstone</li>
+          <li><span>Goal:</span> Reach the Star Chamber atop the tower.</li>
+        </ul>
+        <div id="badges" class="legend" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));"></div>
+      </div>
+    </div>
+    <div id="log" class="log" aria-live="polite"></div>
+    <form id="command-form">
+      <input id="command-input" type="text" name="command" placeholder="Try 'look', 'go north', 'take torch', or 'use key'" autocomplete="off" aria-label="Command input" />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+  <script>
+    const scenes = {
+      courtyard: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Moonlit courtyard of a castle">
+          <defs>
+            <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0f1c32"/>
+              <stop offset="100%" stop-color="#0a1220"/>
+            </linearGradient>
+            <linearGradient id="stone" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#3f5874"/>
+              <stop offset="100%" stop-color="#2b3f58"/>
+            </linearGradient>
+            <linearGradient id="flag" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#eab676"/>
+              <stop offset="100%" stop-color="#d49b52"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky)"/>
+          <circle cx="70" cy="50" r="26" fill="#f4d9a3" opacity="0.9"/>
+          <rect x="60" y="120" width="300" height="90" rx="8" fill="url(#stone)" stroke="#7491b1" stroke-width="2"/>
+          <rect x="180" y="130" width="60" height="80" rx="4" fill="#1c2a3c" stroke="#8ec5f0" stroke-width="3"/>
+          <rect x="70" y="135" width="30" height="45" fill="#152233" stroke="#8ec5f0"/>
+          <rect x="320" y="135" width="30" height="45" fill="#152233" stroke="#8ec5f0"/>
+          <path d="M60 120 L210 80 L360 120 Z" fill="#2f425d" stroke="#8ec5f0" stroke-width="2"/>
+          <path d="M210 80 L210 55" stroke="#f2e9d0" stroke-width="4"/>
+          <rect x="204" y="30" width="12" height="30" fill="url(#flag)" stroke="#8ec5f0"/>
+          <rect x="110" y="170" width="50" height="10" rx="5" fill="#24354e"/>
+          <rect x="260" y="170" width="50" height="10" rx="5" fill="#24354e"/>
+          <circle cx="140" cy="185" r="6" fill="#eab676"/>
+          <circle cx="280" cy="185" r="6" fill="#eab676"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Courtyard</text>
+        </svg>
+      `,
+      gatehouse: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Gatehouse interior with portcullis and levers">
+          <defs>
+            <linearGradient id="sky2" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0e1a2c"/>
+              <stop offset="100%" stop-color="#0a111c"/>
+            </linearGradient>
+            <linearGradient id="stone2" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#425c7c"/>
+              <stop offset="100%" stop-color="#31445d"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky2)"/>
+          <rect x="40" y="70" width="340" height="140" rx="10" fill="url(#stone2)" stroke="#90c7f5" stroke-width="2"/>
+          <rect x="70" y="90" width="280" height="100" rx="6" fill="#1b2637" stroke="#8ec5f0" stroke-dasharray="6 4"/>
+          <rect x="110" y="90" width="20" height="100" fill="#0c1321" stroke="#eab676" stroke-width="3"/>
+          <rect x="290" y="90" width="20" height="100" fill="#0c1321" stroke="#eab676" stroke-width="3"/>
+          <line x1="120" y1="90" x2="120" y2="50" stroke="#f4d9a3" stroke-width="4"/>
+          <rect x="114" y="36" width="12" height="26" fill="#eab676" stroke="#f2e9d0"/>
+          <rect x="260" y="120" width="30" height="12" rx="4" fill="#eab676" stroke="#f2e9d0"/>
+          <circle cx="275" cy="126" r="4" fill="#0c1321"/>
+          <rect x="90" y="200" width="240" height="8" rx="4" fill="#0f192b" opacity="0.8"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Gatehouse</text>
+        </svg>
+      `,
+      hall: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Grand hall with banners and staircases">
+          <defs>
+            <linearGradient id="sky3" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#101c2f"/>
+              <stop offset="100%" stop-color="#0d1421"/>
+            </linearGradient>
+            <linearGradient id="stone3" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#3f5773"/>
+              <stop offset="100%" stop-color="#2d4058"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky3)"/>
+          <rect x="30" y="70" width="360" height="130" rx="12" fill="url(#stone3)" stroke="#8ec5f0" stroke-width="2"/>
+          <rect x="50" y="90" width="60" height="90" rx="8" fill="#152235" stroke="#eab676" stroke-width="3"/>
+          <rect x="310" y="90" width="60" height="90" rx="8" fill="#152235" stroke="#eab676" stroke-width="3"/>
+          <rect x="185" y="95" width="50" height="100" rx="4" fill="#0c1321" stroke="#f4d9a3" stroke-width="3"/>
+          <path d="M210 70 L210 40" stroke="#f4d9a3" stroke-width="4"/>
+          <rect x="204" y="28" width="12" height="26" fill="#eab676" stroke="#f2e9d0"/>
+          <polygon points="95,180 210,120 325,180" fill="#1a2537" stroke="#8ec5f0" stroke-width="2" opacity="0.9"/>
+          <rect x="105" y="180" width="210" height="12" rx="6" fill="#0f1828"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Great Hall</text>
+        </svg>
+      `,
+      library: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Lantern lit library with tall shelves">
+          <defs>
+            <linearGradient id="sky4" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0e1829"/>
+              <stop offset="100%" stop-color="#0b101c"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky4)"/>
+          <rect x="40" y="60" width="340" height="140" rx="10" fill="#24344a" stroke="#8ec5f0" stroke-width="2"/>
+          <rect x="70" y="80" width="70" height="100" fill="#1a2738" stroke="#eab676" stroke-width="3"/>
+          <rect x="170" y="80" width="70" height="100" fill="#1a2738" stroke="#eab676" stroke-width="3"/>
+          <rect x="270" y="80" width="70" height="100" fill="#1a2738" stroke="#eab676" stroke-width="3"/>
+          <rect x="195" y="70" width="20" height="16" fill="#f4d9a3" stroke="#f2e9d0" rx="4"/>
+          <circle cx="205" cy="76" r="5" fill="#eab676" opacity="0.8"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Library</text>
+        </svg>
+      `,
+      armory: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Armory with shields and racks">
+          <defs>
+            <linearGradient id="sky5" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0c1828"/>
+              <stop offset="100%" stop-color="#0a111d"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky5)"/>
+          <rect x="40" y="60" width="340" height="140" rx="10" fill="#223247" stroke="#8ec5f0" stroke-width="2"/>
+          <rect x="80" y="90" width="60" height="90" rx="8" fill="#1b2637" stroke="#eab676" stroke-width="3"/>
+          <rect x="180" y="90" width="60" height="90" rx="8" fill="#1b2637" stroke="#eab676" stroke-width="3"/>
+          <rect x="280" y="90" width="60" height="90" rx="8" fill="#1b2637" stroke="#eab676" stroke-width="3"/>
+          <circle cx="110" cy="120" r="20" fill="#1a2738" stroke="#9adca8" stroke-width="4"/>
+          <rect x="195" y="95" width="30" height="80" rx="6" fill="#1a2738" stroke="#9adca8" stroke-width="3"/>
+          <rect x="295" y="95" width="30" height="80" rx="6" fill="#1a2738" stroke="#9adca8" stroke-width="3"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Armory</text>
+        </svg>
+      `,
+      dungeon: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Dim dungeon with chains and a glowing crystal">
+          <defs>
+            <linearGradient id="sky6" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0a131f"/>
+              <stop offset="100%" stop-color="#070c14"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky6)"/>
+          <rect x="30" y="60" width="360" height="150" rx="12" fill="#1a2331" stroke="#8ec5f0" stroke-width="2"/>
+          <rect x="180" y="110" width="60" height="80" rx="6" fill="#0c1019" stroke="#f28b82" stroke-width="3"/>
+          <line x1="90" y1="80" x2="90" y2="50" stroke="#9adca8" stroke-width="4"/>
+          <line x1="330" y1="80" x2="330" y2="50" stroke="#9adca8" stroke-width="4"/>
+          <circle cx="210" cy="150" r="14" fill="#7ce6ff" opacity="0.7"/>
+          <circle cx="210" cy="150" r="6" fill="#eab676"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Dungeon</text>
+        </svg>
+      `,
+      tower: `
+        <svg viewBox="0 0 420 240" role="img" aria-label="Star-lit tower chamber with crystal focus">
+          <defs>
+            <linearGradient id="sky7" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0d1f38"/>
+              <stop offset="100%" stop-color="#0c1425"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sky7)"/>
+          <circle cx="320" cy="60" r="26" fill="#7ce6ff" opacity="0.6"/>
+          <rect x="70" y="70" width="280" height="140" rx="12" fill="#213348" stroke="#8ec5f0" stroke-width="2"/>
+          <polygon points="210,70 250,210 170,210" fill="#1a2638" stroke="#f4d9a3" stroke-width="3"/>
+          <circle cx="210" cy="120" r="26" fill="#7ce6ff" opacity="0.7"/>
+          <circle cx="210" cy="120" r="10" fill="#eab676"/>
+          <rect x="110" y="95" width="30" height="90" rx="6" fill="#1b2434" stroke="#9adca8" stroke-width="3"/>
+          <rect x="280" y="95" width="30" height="90" rx="6" fill="#1b2434" stroke="#9adca8" stroke-width="3"/>
+          <text x="20" y="220" fill="#9adca8" font-size="12" font-family="monospace">Star Chamber</text>
+        </svg>
+      `
+    };
+
+    const rooms = {
+      courtyard: {
+        name: "Moonlit Courtyard",
+        desc: "The wind smells of pine and wet stone. The great hall lies east, and the gatehouse waits to the north.",
+        exits: { north: "gatehouse", east: "hall" },
+        items: ["torch"],
+        art: scenes.courtyard
+      },
+      gatehouse: {
+        name: "Gatehouse",
+        desc: "Chains hang beside a sealed portcullis. A narrow stair descends south toward the courtyard, and a lever gleams near the arch.",
+        exits: { south: "courtyard" },
+        items: ["bronze lever"],
+        art: scenes.gatehouse
+      },
+      hall: {
+        name: "Great Hall",
+        desc: "Banners rustle above twin staircases. Passages stretch north to the armory, east to the library, and west toward a barred dungeon door.",
+        exits: { north: "armory", east: "library", west: "dungeon", south: "courtyard" },
+        items: [],
+        art: scenes.hall
+      },
+      library: {
+        name: "Lantern Library",
+        desc: "Dusty tomes line towering shelves. A silver key rests on a lectern and a slate bearing an ancient crest leans nearby.",
+        exits: { west: "hall" },
+        items: ["silver key", "ancient crest"],
+        art: scenes.library
+      },
+      armory: {
+        name: "North Armory",
+        desc: "Racks of shields and spears stand in ritual order. A polished shield bears a map to the upper tower.",
+        exits: { south: "hall" },
+        items: ["polished shield"],
+        art: scenes.armory
+      },
+      dungeon: {
+        name: "Lower Dungeon",
+        desc: "Cold air spills from an arch. Chains sway near a plinth where a sunstone glows softly.",
+        exits: { east: "hall", north: "tower" },
+        items: ["sunstone"],
+        art: scenes.dungeon
+      },
+      tower: {
+        name: "Star Chamber",
+        desc: "Above the clouds, the circular room hums with starlight. A crystalline focus waits for the crest and sunstone to resonate.",
+        exits: { south: "dungeon" },
+        items: [],
+        art: scenes.tower
+      }
+    };
+
+    const state = {
+      current: "courtyard",
+      inventory: [],
+      flags: {
+        dungeonUnlocked: false,
+        torchLit: false,
+        crestPlaced: false,
+        sunstonePlaced: false,
+        towerUnlocked: false,
+        gameWon: false
+      }
+    };
+
+    const logEl = document.getElementById("log");
+    const statusEl = document.getElementById("status");
+    const sceneEl = document.getElementById("scene");
+    const badgesEl = document.getElementById("badges");
+    const form = document.getElementById("command-form");
+    const input = document.getElementById("command-input");
+
+    function addEntry(text, who = "game") {
+      const div = document.createElement("div");
+      div.className = `entry ${who}`;
+      div.innerHTML = text;
+      logEl.prepend(div);
+    }
+
+    function renderBadges() {
+      const parts = [];
+      parts.push(`<li class="pill"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M12 6v6l4 2'/></svg>${rooms[state.current].name}</li>`);
+      parts.push(`<li class="pill"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 4h16v4H4z'/><path d='M4 12h16v8H4z'/><path d='M9 4v8'/><path d='M15 8v12'/></svg>${state.inventory.length} item${state.inventory.length === 1 ? "" : "s"}</li>`);
+      if (state.flags.towerUnlocked) parts.push(`<li class="pill"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2l4 4-4 4-4-4z'/><path d='M4 22h16'/><path d='M12 10v12'/></svg>Tower open</li>`);
+      if (state.flags.gameWon) parts.push(`<li class="pill"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z'/></svg>Star lit</li>`);
+      badgesEl.innerHTML = parts.join("");
+    }
+
+    function render() {
+      const room = rooms[state.current];
+      statusEl.innerHTML = `<strong>${room.name}</strong><br>${room.desc}`;
+      sceneEl.innerHTML = room.art;
+      renderBadges();
+    }
+
+    function start() {
+      render();
+      addEntry("You wake in the courtyard of a quiet castle. Collect tools, unlock the tower, and restore the Star Chamber.");
+      input.focus();
+    }
+
+    function normalizeCommand(cmd) {
+      return cmd.trim().toLowerCase();
+    }
+
+    function lookAround() {
+      const room = rooms[state.current];
+      const items = room.items.length ? `You notice ${room.items.map(i => `<strong>${i}</strong>`).join(", ")}.` : "Nothing loose catches your eye.";
+      addEntry(`${room.desc} ${items}`);
+    }
+
+    function showInventory() {
+      if (!state.inventory.length) {
+        addEntry("Your satchel is empty.");
+      } else {
+        addEntry(`You carry ${state.inventory.map(i => `<strong>${i}</strong>`).join(", ")}.`);
+      }
+    }
+
+    function takeItem(name) {
+      const room = rooms[state.current];
+      const idx = room.items.findIndex(i => i.toLowerCase() === name);
+      if (idx === -1) {
+        addEntry("That item is not here.");
+        return;
+      }
+      const [item] = room.items.splice(idx, 1);
+      state.inventory.push(item);
+      addEntry(`You take the <strong>${item}</strong>.`);
+      if (item === "torch") {
+        state.flags.torchLit = true;
+        addEntry("You strike the torch and it flares to life, chasing away the chill.");
+      }
+      render();
+    }
+
+    function move(direction) {
+      const dir = direction;
+      const room = rooms[state.current];
+      const next = room.exits[dir];
+      if (!next) {
+        addEntry("Stone walls block that way.");
+        return;
+      }
+      if (next === "dungeon" && !state.flags.dungeonUnlocked) {
+        addEntry("An iron gate bars the dungeon. Perhaps a key fits here.", "game");
+        return;
+      }
+      if (next === "dungeon" && !state.flags.torchLit) {
+        addEntry("The dungeon yawns dark. Without a lit torch you refuse to descend.");
+        return;
+      }
+      if (next === "tower" && !state.flags.towerUnlocked) {
+        addEntry("The tower lift is dormant. You sense it needs both crest and sunstone placed in the gatehouse.");
+        return;
+      }
+      state.current = next;
+      addEntry(`You move ${dir} into the <strong>${rooms[next].name}</strong>.`);
+      render();
+      if (state.current === "tower" && state.flags.sunstonePlaced && state.flags.crestPlaced) {
+        state.flags.gameWon = true;
+        addEntry("The Star Chamber resonates! You have restored the castle's beacon. You win!");
+        render();
+      }
+    }
+
+    function useItem(cmd) {
+      const room = rooms[state.current];
+      const hasItem = (item) => state.inventory.some(i => i.toLowerCase() === item);
+      if (cmd.includes("key")) {
+        if (!hasItem("silver key")) return addEntry("You have no key that fits.");
+        if (state.current === "hall" && !state.flags.dungeonUnlocked) {
+          state.flags.dungeonUnlocked = true;
+          addEntry("The silver key clicks! The dungeon gate grinds open.");
+        } else {
+          addEntry("The key scrapes stone but finds no lock here.");
+        }
+        return;
+      }
+      if (cmd.includes("crest")) {
+        if (!hasItem("ancient crest")) return addEntry("You aren't holding the crest.");
+        if (state.current === "gatehouse") {
+          state.flags.crestPlaced = true;
+          addEntry("You press the crest into the portcullis. Runes flare along the iron.");
+          updateTowerUnlock();
+        } else {
+          addEntry("Nothing here bears the crest's pattern.");
+        }
+        return;
+      }
+      if (cmd.includes("sunstone")) {
+        if (!hasItem("sunstone")) return addEntry("You don't have the sunstone yet.");
+        if (state.current === "gatehouse") {
+          state.flags.sunstonePlaced = true;
+          addEntry("The sunstone locks into a cradle, bathing the gatehouse in soft light.");
+          updateTowerUnlock();
+        } else {
+          addEntry("The sunstone hums but reacts to nothing here.");
+        }
+        return;
+      }
+      if (cmd.includes("lever")) {
+        if (room.items.includes("bronze lever")) {
+          addEntry("You pull the bronze lever. Chains rattle, priming the portcullis machinery.");
+          room.items = room.items.filter(i => i !== "bronze lever");
+          state.inventory.push("bronze lever");
+        } else {
+          addEntry("You find no lever to move.");
+        }
+        return;
+      }
+      if (cmd.includes("torch")) {
+        if (state.inventory.some(i => i === "torch")) {
+          state.flags.torchLit = true;
+          addEntry("You adjust the torch until the flame steadies." );
+        } else {
+          addEntry("You have no torch to light.");
+        }
+        return;
+      }
+      addEntry("You fumble but nothing happens.");
+    }
+
+    function updateTowerUnlock() {
+      if (state.flags.crestPlaced && state.flags.sunstonePlaced) {
+        state.flags.towerUnlocked = true;
+        addEntry("Runes blaze across the gatehouse. The tower lift hums to life to the east!");
+        rooms.gatehouse.exits.east = "tower";
+        render();
+      }
+    }
+
+    function examine(target) {
+      const room = rooms[state.current];
+      const lowerItems = room.items.map(i => i.toLowerCase());
+      const invItems = state.inventory.map(i => i.toLowerCase());
+      if (lowerItems.includes(target) || invItems.includes(target)) {
+        switch (target) {
+          case "torch":
+            addEntry("A pitch-soaked torch. Lit, it keeps the darkness of the dungeon at bay.");
+            break;
+          case "silver key":
+            addEntry("A tarnished silver key. Its wards match the dungeon gate.");
+            break;
+          case "ancient crest":
+            addEntry("A stone crest carved with a star. The gatehouse portcullis bears the same sigil.");
+            break;
+          case "sunstone":
+            addEntry("Warm to the touch, the sunstone hums with latent light. It looks like it could power old mechanisms.");
+            break;
+          case "polished shield":
+            addEntry("The shield's mirrored face hints that the tower can be reached when crest and sunstone are combined at the gatehouse.");
+            break;
+          case "bronze lever":
+            addEntry("A heavy bronze lever taken from the gatehouse machinery—proof that you primed the lift.");
+            break;
+          default:
+            addEntry("You study it closely, committing every detail to memory.");
+        }
+      } else {
+        addEntry("You don't see that here.");
+      }
+    }
+
+    function handleCommand(evt) {
+      evt.preventDefault();
+      const raw = input.value;
+      const cmd = normalizeCommand(raw);
+      if (!cmd) return;
+      addEntry(raw, "you");
+
+      if (cmd === "help") {
+        addEntry("Commands: go north/south/east/west, look, take <item>, use <item>, examine <item>, inventory.");
+      } else if (cmd === "look") {
+        lookAround();
+      } else if (cmd === "inventory") {
+        showInventory();
+      } else if (/^go /.test(cmd) || ["north","south","east","west"].includes(cmd)) {
+        const dir = cmd.replace("go ", "").trim();
+        move(dir);
+      } else if (cmd.startsWith("take ")) {
+        takeItem(cmd.replace("take ", "").trim());
+      } else if (cmd.startsWith("use ")) {
+        useItem(cmd.replace("use ", "").trim());
+      } else if (cmd.startsWith("examine ")) {
+        examine(cmd.replace("examine ", "").trim());
+      } else {
+        addEntry("Your words echo unanswered. Try a different command.");
+      }
+
+      input.value = "";
+    }
+
+    form.addEventListener("submit", handleCommand);
+    start();
+  </script>
+</body>
+</html>
